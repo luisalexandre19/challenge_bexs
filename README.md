@@ -105,11 +105,10 @@ Logo, foi utilizado o ecosistema Spring que nos permitiu unir duas interfaces, c
     * SpringWeb (Api Rest)
     * SpringJpa (Persistência na base em memória H2)
     
-Após levantar a solução, sera iniciado um servidor de aplicação na porta 8080, além da interface console, conforme solicitado pelo desafio. 
-No Log gerado pela solução é possível visualizar também que ao passar o caminho completo do arquivo CSV como argumento, este será antes de disponibilizar 
-a iteração com o usuário carregado na base de dados em memória, dando uma carga inicial, porém para esta solução, o arquivo não interfere no fluxo da aplicação,
-ou seja, caso ocorra algum erro no carregamento ou não seja informado, será possível utilizar a solução, porém será necessário via API Rest dar a carga das rotas, e
-é possível utilizar simultaneamente as duas interfaces, Rest e console.
+Ao iniciar a solução, inicia-se também um servidor de aplicação na porta 8080, além da interface console, conforme solicitado pelo desafio. 
+No LOG gerado é possível visualizar, que arquivo CSV (caminho completo) fornecido como argumento, será carregado antes da liberação da iteração com o usuário em uma base de dados em memória (carga inicial de rotas).
+Entretanto, esta solução flexibiliza esta carga inicial e continua seu fluxo, independente do êxito do carregamento, porém é obrigatório a passagem do arquivo!
+Nesta também é possível utilizar simultaneamente as duas interfaces, Rest e console em um único Boot.
 
 Simples Doc da API Rest.
 
