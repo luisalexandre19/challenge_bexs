@@ -42,7 +42,7 @@ public class FlightService {
     private Map<String, String> predecessors;
     private Map<String, Double> distance;
 
-    public void addRoute(RouteDTO routeDTO) {
+    public RouteDTO addRoute(RouteDTO routeDTO) {
         routeRepository.save(RouteEntity.from(routeDTO));
 
         if (nonNull(applicationArguments)
@@ -51,6 +51,7 @@ public class FlightService {
             //update a new line in cvs file
             updateCSVFile(routeDTO);
         }
+        return routeDTO;
     }
 
     private void updateCSVFile(RouteDTO routeDTO) {

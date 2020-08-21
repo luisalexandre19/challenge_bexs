@@ -28,7 +28,6 @@ public class FlightResource {
     @GetMapping("/routes/source/{source}/target/{target}")
     public ResponseEntity<BestRouteDTO> bestRoute(@PathVariable("source") String source,
                                                   @PathVariable("target") String target) {
-
         List<String> pathRoutes = flightService.bestRoute(source, target);
 
         return ResponseEntity.ok(BestRouteDTO
