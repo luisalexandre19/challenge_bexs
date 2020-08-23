@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,11 +39,11 @@ public class FlightResource {
     }
 
     @PostMapping("/routes")
-    public ResponseEntity<RouteDTO> addRoute(@Valid @RequestBody RouteDTO route) {
+    public ResponseEntity<Void> addRoute(@Valid @RequestBody RouteDTO route) {
 
         flightService.addRoute(route);
 
-        return ResponseEntity.ok(route);
+        return ResponseEntity.created(URI.create("/routes")).build();
     }
 
 }

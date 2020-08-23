@@ -1,6 +1,7 @@
 package br.flight.bex.challenge.models.dtos;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -22,7 +24,7 @@ public class RouteDTO {
     private String target;
 
     @NotNull(message = "Task cost must not be null!")
-    @PositiveOrZero(message = "cost must be positive or zero")
+    @PositiveOrZero(message = "Task cost must be positive or zero!")
     private Double cost;
 
     public String toCSV() {

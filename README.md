@@ -115,16 +115,8 @@ Simples Doc da API Rest.
 * Criar novas Rotas
     * URL: http://localhost:8080/flights/v1/routes
     * METHOD: POST 
-    * REPONSE: OK (200)
+    * REPONSE: CREATED (201)
     * PAYLOAD: (JSON)
-    ```
-    {
-        "source" : "GRU",
-        "target" : "SLG",
-        "cost": 1.1
-    }
-    ```
-    * RESPONSE: (JSON)
     ```
     {
         "source" : "GRU",

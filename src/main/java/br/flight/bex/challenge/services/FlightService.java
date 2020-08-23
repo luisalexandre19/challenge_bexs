@@ -20,10 +20,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
@@ -42,23 +42,21 @@ public class FlightService {
     private Map<String, String> predecessors;
     private Map<String, Double> distance;
 
-    public RouteDTO addRoute(RouteDTO routeDTO) {
+    public void addRoute(RouteDTO routeDTO) {
         routeRepository.save(RouteEntity.from(routeDTO));
 
         if (nonNull(applicationArguments)
                 && nonNull(applicationArguments.getNonOptionArgs())
+                && !applicationArguments.getNonOptionArgs().isEmpty()
                 && nonNull(applicationArguments.getNonOptionArgs().get(0))) {
             //update a new line in cvs file
             updateCSVFile(routeDTO);
         }
-        return routeDTO;
     }
 
     private void updateCSVFile(RouteDTO routeDTO) {
         try {
-
             Files.write(FileSystems.getDefault().getPath(applicationArguments.getNonOptionArgs().get(0)), routeDTO.toCSV().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-
         } catch (Throwable ex) {
             LOG.error("Error -> " + ex.getMessage(), ex);
         }
@@ -86,13 +84,13 @@ public class FlightService {
         return path;
     }
 
-    private void init(String source) {
+    public void init(String source) {
 
         this.routes = routeRepository.findAll();
 
-        if (Objects.isNull(this.routes)
-            || this.routes.isEmpty()) {
-            throw new ChallengeException("Not found any routes in database!");
+        if (isNull(this.routes)
+                || this.routes.isEmpty()) {
+            throw new ChallengeException("Not found any routes in database!", HttpStatus.NO_CONTENT);
         }
 
         settledNodes = new HashSet<>();

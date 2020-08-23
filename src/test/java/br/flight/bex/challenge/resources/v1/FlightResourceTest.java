@@ -1,5 +1,6 @@
 package br.flight.bex.challenge.resources.v1;
 
+import br.flight.bex.challenge.exceptions.ChallengeException;
 import br.flight.bex.challenge.exceptions.handler.GlobalExceptionHandler;
 import br.flight.bex.challenge.models.dtos.RouteDTO;
 import br.flight.bex.challenge.services.FlightService;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,9 +53,9 @@ public class FlightResourceTest {
         List<String> pathRoutes = Arrays.asList("GRU", "BRC", "SCL", "ORL", "CDG");
         Double cost = 40.0;
 
-        when(flightService.bestRoute("GRU", "CDG")).thenReturn(pathRoutes);
+        when(flightService.bestRoute(anyString(), anyString())).thenReturn(pathRoutes);
 
-        when(flightService.getCost("CDG")).thenReturn(cost);
+        when(flightService.getCost(anyString())).thenReturn(cost);
 
         mockMvc.perform(get(FlightResource.BASE_URL + "/routes/source/GRU/target/CDG")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -64,18 +65,68 @@ public class FlightResourceTest {
     }
 
     @Test
-    public void givenRequestForaAdRouteWhenSuccessThenReturnStatusOkAndRoute() throws Exception {
-        RouteDTO routeDTO = new RouteDTO("GRU", "CDG", 40d);
+    public void givenRequestForBestRouteWhenNotFoundPathThenReturnStatusNotFound() throws Exception {
+        when(flightService.bestRoute(anyString(), anyString()))
+                .thenThrow(new ChallengeException("Not found a path!", HttpStatus.NOT_FOUND));
 
-        when(flightService.addRoute(routeDTO)).thenReturn(routeDTO);
+        mockMvc.perform(get(FlightResource.BASE_URL + "/routes/source/GRU/target/SAD")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Not found a path!"));
+    }
+
+    @Test
+    public void givenRequestForBestRouteWhenNoRoutesInDatabaseThenReturnStatusNoContent() throws Exception {
+        when(flightService.bestRoute(anyString(), anyString()))
+                .thenThrow(new ChallengeException("Not found any routes in database!", HttpStatus.NO_CONTENT));
+
+        mockMvc.perform(get(FlightResource.BASE_URL + "/routes/source/GRU/target/SAD")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string("Not found any routes in database!"));
+    }
+
+    @Test
+    public void givenRequestForAddRouteWhenSuccessThenReturnStatusCreated() throws Exception {
+        RouteDTO routeDTO = new RouteDTO("GRU", "CDG", 40d);
 
         mockMvc.perform(post(FlightResource.BASE_URL + "/routes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsBytes(routeDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.source", equalTo(routeDTO.getSource())))
-                .andExpect(jsonPath("$.target", equalTo(routeDTO.getTarget())))
-                .andExpect(jsonPath("$.cost", equalTo(routeDTO.getCost())));
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void givenRequestForAddRouteWithNullFieldsThenReturnBadRequest() throws Exception {
+        RouteDTO routeDTO = new RouteDTO("GRU", null, 40d);
+
+        mockMvc.perform(post(FlightResource.BASE_URL + "/routes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsBytes(routeDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0]", equalTo("Task target must not be blank!")));
+    }
+
+    @Test
+    public void givenRequestForAddRouteWithEmptyFieldsThenReturnBadRequest() throws Exception {
+        RouteDTO routeDTO = new RouteDTO("GRU", "", 40d);
+
+        mockMvc.perform(post(FlightResource.BASE_URL + "/routes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsBytes(routeDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0]", equalTo("Task target must not be blank!")));
+    }
+
+    @Test
+    public void givenRequestForAddRouteWithNegativeCostThenReturnBadRequest() throws Exception {
+        RouteDTO routeDTO = new RouteDTO("GRU", "CDG", -40d);
+
+        mockMvc.perform(post(FlightResource.BASE_URL + "/routes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsBytes(routeDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0]", equalTo("Task cost must be positive or zero!")));
     }
 
     @Test
